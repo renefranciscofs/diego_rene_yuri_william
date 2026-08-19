@@ -1,0 +1,7 @@
+pandas>=2.1
+matplotlib>=3.6
+seaborn>=0.13
+numpy>=1.26
+notebook>=7.0
+ipykernel>=6.29
+kagglehub>=0.3

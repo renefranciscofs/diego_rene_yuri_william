@@ -7,13 +7,13 @@ produto, reembolso, cancelamento). Ao final do bloco, o sistema construído ser�
 
 ## Estado atual (TP1)
 
-| Etapa | Status |
-|---|---|
-| 1. Documentação técnica do dataset | ✅ Concluída (abaixo e no notebook) |
-| 2. EDA completo (inspeção, qualidade, limpeza, univariada) | ✅ Concluída — `eda/eda.ipynb` |
-| 3. Hipóteses sobre as intenções dos usuários | ✅ Concluída — 5 hipóteses no notebook |
-| 4. API FastAPI + JWT (`/health`, `/auth/token`, `/predict`) | ⏳ Próxima etapa |
-| 5. DFD com trust boundaries + tríade CIA | ⏳ Próxima etapa |
+| Etapa                                                       | Status                                 |
+| ----------------------------------------------------------- | -------------------------------------- |
+| 1. Documentação técnica do dataset                          | ✅ Concluída (abaixo e no notebook)    |
+| 2. EDA completo (inspeção, qualidade, limpeza, univariada)  | ✅ Concluída — `eda/eda.ipynb`         |
+| 3. Hipóteses sobre as intenções dos usuários                | ✅ Concluída — 5 hipóteses no notebook |
+| 4. API FastAPI + JWT (`/health`, `/auth/token`, `/predict`) | ✅ Estrutura inicial — `fastapi/`      |
+| 5. DFD com trust boundaries + tríade CIA                    | ⏳ Próxima etapa                       |
 
 ## Dataset: Customer Support Ticket Dataset
 
@@ -46,7 +46,13 @@ balanceado e realista, e licença CC0 compatível com repositório público.
 │   └── customer_support_tickets_clean.csv   # versão limpa (gerada pela célula de limpeza do EDA)
 ├── eda/
 │   └── eda.ipynb                      # EDA completo — único .ipynb, já executado com gráficos embutidos
-├── fastapi/                           # vazio — código-fonte da API (etapa 4)
+├── fastapi/                           # código-fonte da API (etapa 4)
+│   ├── main.py                        # ponto de entrada (uvicorn main:app --reload)
+│   ├── requirements.txt               # dependências da API (isoladas das do EDA)
+│   ├── .env.example                   # variáveis de ambiente esperadas (JWT_SECRET_KEY, ...)
+│   ├── routes/                        # endpoints: health, auth, predict
+│   ├── models/                        # schemas Pydantic de entrada/saída
+│   └── security/                      # JWT, OAuth2PasswordBearer, base de usuários
 └── others/                            # vazio — DFD em .png (etapa 5)
 ```
 
@@ -84,14 +90,30 @@ O notebook já é entregue executado (saídas e gráficos embutidos). Segue a es
 dados, (4) limpeza e preparação, (5) análise univariada com histogramas, (6) hipóteses sobre as
 intenções. Atenção: reexecutar a célula de limpeza regenera `data/customer_support_tickets_clean.csv`.
 
-### API FastAPI — ainda não incluída nesta etapa
-
-O diretório `fastapi/` será preenchido na etapa 4; a execução prevista será:
+### API FastAPI
 
 ```bash
 cd fastapi
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+python3 -c "import secrets; print(secrets.token_hex(32))"   # gera um valor aleatório
+# cole o valor gerado em JWT_SECRET_KEY dentro de .env
 uvicorn main:app --reload
 ```
+
+Endpoints disponíveis (docs interativas em `http://127.0.0.1:8000/docs`):
+
+- `GET /health` — verificação de disponibilidade, sem autenticação.
+- `POST /auth/token` — login (`OAuth2PasswordRequestForm`: `username`/`password`) e emissão de
+  token JWT. Usuário de demonstração: `admin` / `admin123` (base em memória, ver
+  `security/users.py` — trocar por uma base real antes de produção).
+- `POST /predict` — protegido por Bearer token; recebe `ticket_subject`/`ticket_description` e
+  retorna a intenção prevista, dentre as 5 classes de `Ticket Type` do dataset (`Technical issue`,
+  `Billing inquiry`, `Product inquiry`, `Refund request`, `Cancellation request`
+  `models/predict.py::Intent`). Ainda é um placeholder: a integração com o modelo de classificação
+  será feita em etapa futura.
 
 ## Hipóteses sobre as intenções dos usuários (resumo)
 

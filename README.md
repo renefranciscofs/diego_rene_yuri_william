@@ -130,6 +130,11 @@ Endpoints disponíveis (docs interativas em `http://127.0.0.1:8000/docs`):
 
 Detalhamento completo, com as estatísticas que sustentam cada hipótese, no notebook (`eda/eda.ipynb`, Seção 6).
 
+## DFD
+![alt text](others/DFD.png)
+
+## CIA
+![alt text](others/CIA.png)
 ## Licença
 
 - Dataset: CC0: Public Domain.

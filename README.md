@@ -13,7 +13,7 @@ produto, reembolso, cancelamento). Ao final do bloco, o sistema construído ser�
 | 2. EDA completo (inspeção, qualidade, limpeza, univariada)  | ✅ Concluída — `eda/eda.ipynb`         |
 | 3. Hipóteses sobre as intenções dos usuários                | ✅ Concluída — 5 hipóteses no notebook |
 | 4. API FastAPI + JWT (`/health`, `/auth/token`, `/predict`) | ✅ Estrutura inicial — `fastapi/`      |
-| 5. DFD com trust boundaries + tríade CIA                    | ⏳ Próxima etapa                       |
+| 5. DFD com trust boundaries + tríade CIA                    | ✅ Concluída - `others/`               |
 
 ## Dataset: Customer Support Ticket Dataset
 
@@ -53,7 +53,9 @@ balanceado e realista, e licença CC0 compatível com repositório público.
 │   ├── routes/                        # endpoints: health, auth, predict
 │   ├── models/                        # schemas Pydantic de entrada/saída
 │   └── security/                      # JWT, OAuth2PasswordBearer, base de usuários
-└── others/                            # vazio — DFD em .png (etapa 5)
+└── others/                            # DFD e CIA em .png (etapa 5)
+    └── CIA.png                        # análise CIA
+    └── DFD.png                        # análise DFD
 ```
 
 ## Instalação

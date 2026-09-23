@@ -5,3 +5,4 @@ numpy>=1.26
 notebook>=7.0
 ipykernel>=6.29
 kagglehub>=0.3
+scipy>=1.11

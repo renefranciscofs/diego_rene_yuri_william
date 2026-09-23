@@ -3,17 +3,23 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from models.token import Token
 from security.jwt import create_access_token
+from security.rate_limit import check_rate_limit, enforce_auth_rate_limit
 from security.users import authenticate_user
 
-from slowapi import Limiter
-from slowapi.util import get_remote_address
-
 router = APIRouter(prefix="/auth", tags=["auth"])
-limiter = Limiter(key_func=get_remote_address)
 
-@router.post("/token", response_model=Token)
-@limiter.limit("10/minute")
+
+@router.post(
+    "/token",
+    response_model=Token,
+    dependencies=[Depends(enforce_auth_rate_limit)],
+)
 def login(form_data: OAuth2PasswordRequestForm = Depends()) -> Token:
+    # Segunda dimensão do rate limit: por username, além do limite por
+    # IP já aplicado pela dependency `enforce_auth_rate_limit` acima.
+    # Justificativa completa em security/rate_limit.py.
+    check_rate_limit(f"user:{form_data.username}")
+
     user = authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(

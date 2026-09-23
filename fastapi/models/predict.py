@@ -2,6 +2,8 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
+from models.base import StrictBaseModel
+
 
 class Intent(str, Enum):
     TECHNICAL_ISSUE = "Technical issue"
@@ -11,7 +13,10 @@ class Intent(str, Enum):
     CANCELLATION_REQUEST = "Cancellation request"
 
 
-class PredictRequest(BaseModel):
+class PredictRequest(StrictBaseModel):
+    """Corpo de POST /predict. Herda de StrictBaseModel (extra='forbid'):
+    campos além de ticket_subject/ticket_description resultam em 422."""
+
     ticket_subject: str = Field(..., min_length=1, max_length=200)
     ticket_description: str = Field(..., min_length=1, max_length=5000)
 

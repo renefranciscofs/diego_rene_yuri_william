@@ -1,50 +1,31 @@
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware 
-from slowapi import _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from routes import auth, health, predict
-from routes.auth import limiter as auth_limiter
+from security.config import ALLOWED_ORIGINS
+from security.headers import SecurityHeadersMiddleware
 
 app = FastAPI(
     title="Sistema de Atendimento ao Cliente com IA",
     description="API que infere a intenção por trás de um ticket de suporte.",
     version="0.1.0",
 )
-app.state.limiter = auth_limiter
-app.add_exception_handler(
-    RateLimitExceeded,
-    _rate_limit_exceeded_handler
-)
 
-allow_list = [
-    "http://localhost"
-]
-
+# CORS: allowlist explícita de origens configurada via ALLOWED_ORIGINS
+# (.env). allow_credentials=False porque a autenticação é via Bearer
+# token no header Authorization, não via cookies — ver security/config.py.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allow_list,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
-@app.middleware("http")
-async def security_headers(request: Request, call_next):
-    response = await call_next(request)
+# Headers de segurança (HSTS, X-Frame-Options, X-Content-Type-Options,
+# CSP, Referrer-Policy) em toda resposta — ver security/headers.py.
+app.add_middleware(SecurityHeadersMiddleware)
 
-    response.headers['Strict-Transport-Security'] = ("max-age=31536000; includeSubDomains")
-    response.headers["X-Frame-Options"] = "Deny"
-    response.headers['X-Content-Type-Options'] = "nosniff"
-    response.headers["Content-Security-Policy"] = (
-        "default-src 'self'; "
-        "script-src 'self'; "
-        "style-src 'self'; "
-        "img-src 'self'"
-    )
-
-    return response
-    
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(predict.router)

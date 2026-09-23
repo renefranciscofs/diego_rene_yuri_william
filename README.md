@@ -105,6 +105,10 @@ python3 -c "import secrets; print(secrets.token_hex(32))"   # gera um valor alea
 uvicorn main:app --reload
 ```
 
+> Também defina `ALLOWED_ORIGINS` (origens de CORS autorizadas) e, opcionalmente,
+> `AUTH_RATE_LIMIT_MAX_ATTEMPTS`/`AUTH_RATE_LIMIT_WINDOW_SECONDS` no `.env` — valores
+> padrão e justificativa em [`fastapi/SECURITY.md`](fastapi/SECURITY.md).
+
 Endpoints disponíveis (docs interativas em `http://127.0.0.1:8000/docs`):
 
 - `GET /health` — verificação de disponibilidade, sem autenticação.
@@ -113,7 +117,7 @@ Endpoints disponíveis (docs interativas em `http://127.0.0.1:8000/docs`):
   `security/users.py` — trocar por uma base real antes de produção).
 - `POST /predict` — protegido por Bearer token; recebe `ticket_subject`/`ticket_description` e
   retorna a intenção prevista, dentre as 5 classes de `Ticket Type` do dataset (`Technical issue`,
-  `Billing inquiry`, `Product inquiry`, `Refund request`, `Cancellation request`
+  `Billing inquiry`, `Product inquiry`, `Refund request`, `Cancellation request` — ver
   `models/predict.py::Intent`). Ainda é um placeholder: a integração com o modelo de classificação
   será feita em etapa futura.
 

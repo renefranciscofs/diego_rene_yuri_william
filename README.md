@@ -13,7 +13,10 @@ produto, reembolso, cancelamento). Ao final do bloco, o sistema construído ser�
 | 2. EDA completo (etapas 1.1–1.8: inspeção, qualidade, limpeza, univariada, multivariada, outliers, documentação) | ✅ Concluída — `eda/eda.ipynb` |
 | 3. Hipóteses sobre as intenções dos usuários | ✅ Concluída — 5 exploratórias + 6 testes formais (Mann-Whitney e qui-quadrado) no notebook |
 | 4. API FastAPI + JWT (`/health`, `/auth/token`, `/predict`) | ✅ Estrutura inicial — `fastapi/` |
-| 5. DFD com trust boundaries + tríade CIA | ✅ Concluída - `others/` |
+| 5. DFD com trust boundaries + tríade CIA | ✅ Concluída — `others/` |
+| 6. Hardening OWASP Top 10 na API (headers, CORS, rate limit, `extra=forbid`) | ✅ Concluída — `fastapi/SECURITY.md` |
+| 7. Testes de segurança automatizados (pytest) | ✅ Concluída — `tests/test.py` |
+| 8. Scan passivo com OWASP ZAP (findings médio/alto) | ✅ Concluída — `zap/` |
 
 ## Dataset: Customer Support Ticket Dataset
 
@@ -46,15 +49,21 @@ balanceado e realista, e licença CC0 compatível com repositório público.
 │   └── customer_support_tickets_clean.csv   # versão limpa (gerada pela célula de limpeza do EDA)
 ├── eda/
 │   └── eda.ipynb                      # EDA completo — único .ipynb, já executado com gráficos embutidos
-├── fastapi/                           # código-fonte da API (etapa 4)
+├── fastapi/                           # código-fonte da API (etapas 4 e 6)
 │   ├── main.py                        # ponto de entrada (uvicorn main:app --reload)
-│   ├── requirements.txt               # dependências da API (isoladas das do EDA)
+│   ├── requirements.txt               # dependências da API e dos testes (isoladas das do EDA)
 │   ├── .env.example                   # variáveis de ambiente esperadas (JWT_SECRET_KEY, ...)
+│   ├── SECURITY.md                    # decisões de hardening OWASP Top 10
 │   ├── routes/                        # endpoints: health, auth, predict
 │   ├── models/                        # schemas Pydantic de entrada/saída
-│   └── security/                      # JWT, OAuth2PasswordBearer, base de usuários
+│   └── security/                      # JWT, OAuth2, headers, rate limit, ownership, usuários
+├── tests/
+│   └── test.py                        # testes de segurança da API (etapa 7)
+├── zap/                               # scan passivo OWASP ZAP (etapa 8)
+│   ├── scan_passivo_zap.md            # análise dos findings (severidade média e alta)
+│   └── *.pdf                          # relatório bruto do ZAP e versão em PDF da análise
 └── others/                            # DFD e CIA em .png (etapa 5)
-    └── CIA.png                        # análise CIA
+    ├── CIA.png                        # análise CIA
     └── DFD.png                        # análise DFD
 ```
 
@@ -123,6 +132,34 @@ Endpoints disponíveis (docs interativas em `http://127.0.0.1:8000/docs`):
   `models/predict.py::Intent`). Ainda é um placeholder: a integração com o modelo de classificação
   será feita em etapa futura.
 
+### Testes de segurança
+
+Com o ambiente da API ativado (`fastapi/.venv`, que já inclui `pytest` e `httpx`), a partir da
+raiz do repositório:
+
+```bash
+source fastapi/.venv/bin/activate
+pytest tests/test.py -v
+```
+
+| Teste | Cenário | Esperado |
+|---|---|---|
+| `test_predict_without_token` | `POST /predict` sem `Authorization` | `401` |
+| `test_cannot_access_resource_of_another_user` | `ensure_owner` com dono diferente do usuário autenticado | `404` (não revela existência do recurso) |
+| `test_predict_rejects_extra_body_field` | body com campo extra (`is_admin`) | `422` (mass assignment bloqueado por `extra=forbid`) |
+
+## Scan passivo OWASP ZAP (resumo)
+
+Scan passivo da API local (`http://127.0.0.1:8000`) com OWASP ZAP. Análise completa em
+[`zap/scan_passivo_zap.md`](zap/scan_passivo_zap.md) e relatório bruto em `zap/`.
+
+| Finding | Severidade | Onde | Tratamento |
+|---|---|---|---|
+| Authentication Credentials Captured | High | `/auth/token` | HTTP apenas em ambiente local; HTTPS obrigatório antes de qualquer implantação |
+| Content Security Policy Header Not Set | Medium | `/docs` | Risco aceito em desenvolvimento; CSP recomendada se `/docs` for exposto |
+| Cross-Domain Misconfiguration | Medium | CDN jsDelivr (Swagger UI) | Risco de terceiro — o CORS da própria API é restritivo (`ALLOWED_ORIGINS`) |
+| Sub Resource Integrity Attribute Missing | Medium | `/docs` (Swagger UI) | Risco aceito enquanto `/docs` não for público em produção |
+
 ## Hipóteses sobre as intenções dos usuários (resumo)
 
 1. **Intenções equilibradas** — 5 classes entre 19,3% e 20,7%: não há intenção dominante;
@@ -167,6 +204,7 @@ metadados — o modelo deve apoiar-se no texto normalizado da descrição.
 
 ## CIA
 ![alt text](others/CIA.png)
+
 ## Licença
 
 - Dataset: CC0: Public Domain.

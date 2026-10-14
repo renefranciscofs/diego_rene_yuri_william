@@ -1,4 +1,4 @@
-# TP3 — Tarefa 5: Pergunta de classificação
+# TP3 — Tarefa 6: Pergunta de classificação
 
 **Dado um texto de atendimento ao cliente, qual é a intenção do usuário?**
 

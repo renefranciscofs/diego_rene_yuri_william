@@ -18,7 +18,7 @@ produto, reembolso, cancelamento). Ao final do bloco, o sistema construído ser�
 | 7. Testes de segurança automatizados (pytest) | ✅ Concluída — `tests/test.py` |
 | 8. Scan passivo com OWASP ZAP (findings médio/alto) | ✅ Concluída — `zap/` |
 | 9. TP3 · Tarefa 1 — regressão linear (pipeline completo, R²/RMSE, residual plot, Q-Q plot, limitações) | ✅ Concluída — `tp3/regressao.ipynb` (executado) |
-| 10. TP3 · Tarefa 5 — pergunta de classificação (classes, distribuição, justificativa ML supervisionado) | ✅ Concluída — `tp3/pergunta_classificacao.md` + `.pdf` (2 páginas) |
+| 10. TP3 · Tarefa 6 — pergunta de classificação (classes, distribuição, justificativa ML supervisionado) | ✅ Concluída — `tp3/pergunta_classificacao.md` + `.pdf` (2 páginas) |
 
 ## Dataset: Customer Support Ticket Dataset
 
@@ -53,7 +53,7 @@ balanceado e realista, e licença CC0 compatível com repositório público.
 │   └── eda.ipynb                      # EDA completo — já executado com gráficos embutidos
 ├── tp3/                               # transição T1 → T2 (TP3)
 │   ├── regressao.ipynb                # Tarefa 1: regressão linear (pipeline, R²/RMSE, resíduos, Q-Q)
-│   ├── pergunta_classificacao.md      # Tarefa 5: pergunta de classificação (classes, distribuição, justificativa)
+│   ├── pergunta_classificacao.md      # Tarefa 6: pergunta de classificação (classes, distribuição, justificativa)
 │   └── pergunta_classificacao.pdf     # mesma entrega em PDF (2 páginas)
 ├── fastapi/                           # código-fonte da API (etapas 4 e 6)
 │   ├── main.py                        # ponto de entrada (uvicorn main:app --reload)
@@ -211,7 +211,7 @@ metadados — o modelo deve apoiar-se no texto normalizado da descrição.
 ## TP3 — consolidação e transição para o Trimestre 2 (resumo)
 
 O TP3 encerra o Trimestre 1 e prepara o Trimestre 2 — ver `tp3/regressao.ipynb` (Tarefa 1) e
-`tp3/pergunta_classificacao.md` (Tarefa 5).
+`tp3/pergunta_classificacao.md` (Tarefa 6).
 
 **Tarefa 1 — regressão linear (consolidação).** Alvo: `Desc_Len` (comprimento do texto, derivado
 no EDA e disponível para os 8.469 tickets). Pipeline completo (imputação + one-hot + padronização
@@ -222,7 +222,7 @@ e desempenho **abaixo do baseline na CV** — os metadados não carregam sinal l
 Shapiro-Wilk p = 2,9e−28 — violação de normalidade esperada de um alvo truncado (135–402) e
 sintético. Limitações e próximos passos na Seção 8 do notebook.
 
-**Tarefa 5 — pergunta de classificação.** *"Dado um texto de atendimento ao cliente, qual é a
+**Tarefa 6 — pergunta de classificação.** *"Dado um texto de atendimento ao cliente, qual é a
 intenção do usuário?"* — classificação supervisionada multiclasse sobre texto, com 5 classes
 (`Technical issue`, `Billing inquiry`, `Product inquiry`, `Refund request`, `Cancellation
 request`) balanceadas (19,3%–20,7%; baseline aleatório ≈ 20%). A regressão linear não se aplica

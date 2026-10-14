@@ -6,3 +6,6 @@ passlib[bcrypt]>=1.7
 bcrypt<4.0
 python-multipart>=0.0.9
 python-dotenv>=1.0
+# testes (tests/test.py)
+pytest>=8.0
+httpx>=0.27

@@ -5,15 +5,17 @@ mensagem de um cliente e infere a **intenção** por trás dela (problema técni
 produto, reembolso, cancelamento). Ao final do bloco, o sistema construído será também **atacado**
 (red team) para descobrir falhas de segurança — por isso a API já nasce com autenticação JWT.
 
-## Estado atual (TP1)
+## Estado atual (TP3)
 
 | Etapa | Status |
 |---|---|
 | 1. Documentação técnica do dataset | ✅ Concluída (abaixo e no notebook) |
 | 2. EDA completo (etapas 1.1–1.8: inspeção, qualidade, limpeza, univariada, multivariada, outliers, documentação) | ✅ Concluída — `eda/eda.ipynb` |
 | 3. Hipóteses sobre as intenções dos usuários | ✅ Concluída — 5 exploratórias + 6 testes formais (Mann-Whitney e qui-quadrado) no notebook |
-| 4. API FastAPI + JWT (`/health`, `/auth/token`, `/predict`) | ✅ Estrutura inicial — `fastapi/` |
-| 5. DFD com trust boundaries + tríade CIA | ✅ Concluída - `others/` |
+| 4. API FastAPI + JWT (`/health`, `/auth/token`, `/predict`) | ✅ Concluída — `fastapi/` (inclui hardening OWASP Top 10: headers, CORS, rate limit, `extra=forbid`) |
+| 5. DFD com trust boundaries + tríade CIA | ✅ Concluída — `others/` |
+| 6. TP3 · Tarefa 1 — regressão linear (pipeline completo, R²/RMSE, residual plot, Q-Q plot, limitações) | ✅ Concluída — `tp3/regressao.ipynb` (executado) |
+| 7. TP3 · Tarefa 5 — pergunta de classificação (classes, distribuição, justificativa ML supervisionado) | ✅ Concluída — `tp3/pergunta_classificacao.md` + `.pdf` (2 páginas) |
 
 ## Dataset: Customer Support Ticket Dataset
 
@@ -45,7 +47,11 @@ balanceado e realista, e licença CC0 compatível com repositório público.
 │   ├── customer_support_tickets.csv         # dataset original (Kaggle)
 │   └── customer_support_tickets_clean.csv   # versão limpa (gerada pela célula de limpeza do EDA)
 ├── eda/
-│   └── eda.ipynb                      # EDA completo — único .ipynb, já executado com gráficos embutidos
+│   └── eda.ipynb                      # EDA completo — já executado com gráficos embutidos
+├── tp3/                               # transição T1 → T2 (TP3)
+│   ├── regressao.ipynb                # Tarefa 1: regressão linear (pipeline, R²/RMSE, resíduos, Q-Q)
+│   ├── pergunta_classificacao.md      # Tarefa 5: pergunta de classificação (classes, distribuição, justificativa)
+│   └── pergunta_classificacao.pdf     # mesma entrega em PDF (2 páginas)
 ├── fastapi/                           # código-fonte da API (etapa 4)
 │   ├── main.py                        # ponto de entrada (uvicorn main:app --reload)
 │   ├── requirements.txt               # dependências da API (isoladas das do EDA)
@@ -93,6 +99,9 @@ dados, (4) limpeza e preparação, (5) análise univariada, (6) análise multiva
 exploratórias sobre as intenções, (8) identificação de outliers e anomalias, (9) testes de
 hipótese formais e (10) documentação do EDA e conclusões. Atenção: reexecutar a célula de limpeza
 regenera `data/customer_support_tickets_clean.csv` (incluindo as variáveis derivadas).
+
+O notebook do TP3 (`tp3/regressao.ipynb`) segue o mesmo padrão (executado, saídas e gráficos
+embutidos) e usa `scikit-learn`, já adicionado ao `requirements.txt` raiz.
 
 ### API FastAPI
 
@@ -161,6 +170,28 @@ sintética do dataset. As duas estruturas detectadas são artefatos (pico vesper
 janela de 2,5 dias; independência total entre as duas camadas de rótulo). Implicação para a
 modelagem: **não usar `Ticket Subject` como preditor de `Ticket Type`** e não confiar em
 metadados — o modelo deve apoiar-se no texto normalizado da descrição.
+
+## TP3 — consolidação e transição para o Trimestre 2 (resumo)
+
+O TP3 encerra o Trimestre 1 e prepara o Trimestre 2 — ver `tp3/regressao.ipynb` (Tarefa 1) e
+`tp3/pergunta_classificacao.md` (Tarefa 5).
+
+**Tarefa 1 — regressão linear (consolidação).** Alvo: `Desc_Len` (comprimento do texto, derivado
+no EDA e disponível para os 8.469 tickets). Pipeline completo (imputação + one-hot + padronização
++ `LinearRegression`, 32 preditores), R² e RMSE em treino/teste e validação cruzada 5-fold,
+comparado a baseline que prevê a média. Resultado: **R² ≈ 0 no teste (−0,0002; RMSE = 44,7 ≈ σ)**
+e desempenho **abaixo do baseline na CV** — os metadados não carregam sinal linear (η² máximo
+0,001), confirmando o EDA. Resíduos: residual plot sem forma, Q-Q plot com desvio nas caudas e
+Shapiro-Wilk p = 2,9e−28 — violação de normalidade esperada de um alvo truncado (135–402) e
+sintético. Limitações e próximos passos na Seção 8 do notebook.
+
+**Tarefa 5 — pergunta de classificação.** *"Dado um texto de atendimento ao cliente, qual é a
+intenção do usuário?"* — classificação supervisionada multiclasse sobre texto, com 5 classes
+(`Technical issue`, `Billing inquiry`, `Product inquiry`, `Refund request`, `Cancellation
+request`) balanceadas (19,3%–20,7%; baseline aleatório ≈ 20%). A regressão linear não se aplica
+(rótulos nominais sem ordem; saída contínua ≠ probabilidade); o plano do T2 usa TF-IDF +
+regressão logística multinomial/Naive Bayes/SVM, com F1 macro como métrica principal e
+integração no `/predict` já auditado.
 
 ## DFD
 ![alt text](others/DFD.png)

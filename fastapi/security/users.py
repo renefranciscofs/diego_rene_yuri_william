@@ -14,6 +14,12 @@ _FAKE_USERS_DB = {
         "username": "admin",
         "hashed_password": pwd_context.hash("admin123"),
     },
+    # Segundo usuário de demonstração, necessário para exercitar a checagem
+    # de ownership (BOLA) entre usuários distintos em GET /predictions/{id}.
+    "analista": {
+        "username": "analista",
+        "hashed_password": pwd_context.hash("analista123"),
+    },
 }
 
 

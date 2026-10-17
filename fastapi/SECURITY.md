@@ -46,13 +46,10 @@ com histórico de predições por usuário):
 
 ### 1.3 Verificação de ownership (BOLA) nas rotas que retornam recursos por ID
 
-**Nota de aplicabilidade:** nenhuma rota da API retorna hoje um recurso
-persistido por ID — não há rota do tipo `GET /algo/{id}`. `POST /predict`
-recebe texto e devolve uma predição fixa (placeholder), sem ler nem gravar
-nenhum recurso identificável.
-
-Foi criado `security/ownership.py::ensure_owner(resource_owner_username,
-current_user)`, pronto para ser usado assim que uma rota "por ID" existir:
+Criado `security/ownership.py::ensure_owner(resource_owner_username,
+current_user)` e aplicado em `GET /predictions/{prediction_id}`
+(`routes/predict.py`, adicionada na etapa de testes — ver seção 4). Padrão de
+uso com uma futura camada de persistência:
 
 ```python
 ticket = session.exec(select(Ticket).where(Ticket.id == ticket_id)).first()
@@ -139,3 +136,45 @@ ALLOWED_ORIGINS=http://localhost:3000
 AUTH_RATE_LIMIT_MAX_ATTEMPTS=5
 AUTH_RATE_LIMIT_WINDOW_SECONDS=60
 ```
+
+## 4. Alterações para a suíte de testes (etapa 7)
+
+Para que os testes de segurança (`tests/test_security.py`) exercitem os
+controles **pela API** — e não chamando funções internas — foram feitas as
+seguintes alterações:
+
+| Arquivo | Alteração | Motivo |
+| --- | --- | --- |
+| `routes/predict.py` | `POST /predict` grava cada predição num histórico em memória (`_PREDICTIONS`), associada ao usuário autenticado, com ID UUID4. Nova rota `GET /predictions/{prediction_id}` (autenticada) que chama `ensure_owner` | Não existia nenhuma rota "por ID", então a checagem BOLA não estava aplicada em lugar algum. Agora um usuário autenticado que pede a predição de outro recebe `404 Recurso não encontrado`, idêntico a um ID inexistente |
+| `models/predict.py` | `PredictResponse` ganhou o campo `id` | Permitir ao cliente consultar a predição depois |
+| `security/users.py` | Segundo usuário de demonstração `analista` / `analista123` | Testar BOLA exige dois usuários distintos |
+| `tests/test.py` → `tests/test_security.py` | Renomeado | O pytest só coleta `test_*.py`/`*_test.py`; com o nome antigo `pytest tests/` rodava **0 testes** |
+| `tests/conftest.py` (novo) | Define `JWT_SECRET_KEY`/limites de rate limit antes de importar a app e zera o estado em memória a cada teste | Testes reprodutíveis sem `.env` e independentes da ordem (o contador de rate limit é global ao processo) |
+
+Nenhum controle de segurança existente foi afrouxado para os testes passarem.
+
+## 5. Organização da autenticação e testes de token (feedback da avaliação)
+
+- `security/config.py` foi reorganizado em seções numeradas: **(1) Autenticação (JWT +
+  OAuth2PasswordBearer)**, **(2) CORS**, **(3) Rate limiting**. É o único módulo que lê o
+  ambiente.
+- A rota de emissão do token passou a ser definida uma única vez (`AUTH_ROUTER_PREFIX`,
+  `AUTH_TOKEN_PATH`, `AUTH_TOKEN_URL`) e é usada tanto pelo router (`routes/auth.py`) quanto pelo
+  `OAuth2PasswordBearer(tokenUrl=AUTH_TOKEN_URL)` (`security/oauth2.py`) — antes eram duas strings
+  soltas que podiam divergir.
+- `JWT_EXPIRE_MINUTES` precisa ser um inteiro positivo; caso contrário a API não inicia (falha
+  segura, assim como já acontece sem `JWT_SECRET_KEY`).
+- O fluxo JWT/OAuth2PasswordBearer não mudou: login → JWT HS256 com `sub`/`exp` →
+  `Depends(get_current_user)` nas rotas protegidas.
+
+Testes automatizados de token em `tests/test_security.py` (todos esperam `401`):
+
+| Caso | Teste |
+| --- | --- |
+| Token ausente | `test_predict_without_token_returns_401`, `test_get_prediction_without_token_returns_401` |
+| Token malformado / assinatura forjada | `test_predict_with_invalid_token_returns_401` |
+| Token sem assinatura (`"alg": "none"`) | `test_predict_with_alg_none_token_returns_401` |
+| Token sem a claim `sub` | `test_predict_with_token_without_sub_returns_401` |
+| Token de usuário inexistente | `test_predict_with_token_for_unknown_user_returns_401` |
+| Token expirado | `test_predict_with_expired_token_returns_401` |
+

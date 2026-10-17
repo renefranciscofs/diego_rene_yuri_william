@@ -3,13 +3,18 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt import InvalidTokenError
 
 from models.user import User
+from security.config import AUTH_TOKEN_URL
 from security.jwt import decode_access_token
 from security.users import get_user
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=AUTH_TOKEN_URL)
 
 
 def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
+    """Dependency das rotas protegidas. Responde 401 (com
+    WWW-Authenticate: Bearer) para token ausente — já no
+    OAuth2PasswordBearer —, malformado, com assinatura inválida, expirado,
+    sem claim "sub" ou de um usuário que não existe mais."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Não foi possível validar as credenciais",

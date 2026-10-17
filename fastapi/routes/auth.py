@@ -2,15 +2,16 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from models.token import Token
+from security.config import AUTH_ROUTER_PREFIX, AUTH_TOKEN_PATH
 from security.jwt import create_access_token
 from security.rate_limit import check_rate_limit, enforce_auth_rate_limit
 from security.users import authenticate_user
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(prefix=AUTH_ROUTER_PREFIX, tags=["auth"])
 
 
 @router.post(
-    "/token",
+    AUTH_TOKEN_PATH,
     response_model=Token,
     dependencies=[Depends(enforce_auth_rate_limit)],
 )

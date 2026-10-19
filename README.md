@@ -338,11 +338,6 @@ integração no `/predict` já auditado.
 
 ![DFD da API com trust boundaries TB1, TB2 e TB3](others/DFD.png)
 
-O DFD representa **somente o que existe na implementação atual**; componentes ainda não
-implementados aparecem tracejados em cinza e marcados como **PLANEJADO**. Não há banco de dados
-hoje: usuários, tentativas de login e histórico de predições ficam em **dicionários na memória
-do processo** da API (`D1`–`D3`).
-
 **Trust boundaries:**
 
 | ID | Fronteira | O que cruza | Controles na fronteira |

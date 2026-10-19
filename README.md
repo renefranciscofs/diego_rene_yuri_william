@@ -353,12 +353,6 @@ fronteira de rede entre a API e eles.
 
 ![Tríade CIA por componente do DFD](others/CIA.png)
 
-A tabela aplica a tríade CIA a cada componente do DFD, usando os mesmos identificadores
-(`E1`, `P0`–`P4`, `D1`–`D4`). As linhas de **componentes implementados** descrevem controles que
-existem no código; as duas últimas linhas (`D5` banco de dados e `P5` modelo de classificação),
-em cinza/itálico e marcadas como **PLANEJADO**, descrevem requisitos que esses componentes deverão
-atender quando forem adicionados — não são controles existentes.
-
 ## Licença
 
 - Dataset: CC0: Public Domain.

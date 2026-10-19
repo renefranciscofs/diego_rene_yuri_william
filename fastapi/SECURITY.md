@@ -48,8 +48,7 @@ com histórico de predições por usuário):
 
 Criado `security/ownership.py::ensure_owner(resource_owner_username,
 current_user)` e aplicado em `GET /predictions/{prediction_id}`
-(`routes/predict.py`, adicionada na etapa de testes — ver seção 4). Padrão de
-uso com uma futura camada de persistência:
+(`routes/predict.py`, adicionada na etapa de testes). Padrão de uso com uma futura camada de persistência:
 
 ```python
 ticket = session.exec(select(Ticket).where(Ticket.id == ticket_id)).first()
@@ -137,23 +136,7 @@ AUTH_RATE_LIMIT_MAX_ATTEMPTS=5
 AUTH_RATE_LIMIT_WINDOW_SECONDS=60
 ```
 
-## 4. Alterações para a suíte de testes (etapa 7)
-
-Para que os testes de segurança (`tests/test_security.py`) exercitem os
-controles **pela API** — e não chamando funções internas — foram feitas as
-seguintes alterações:
-
-| Arquivo | Alteração | Motivo |
-| --- | --- | --- |
-| `routes/predict.py` | `POST /predict` grava cada predição num histórico em memória (`_PREDICTIONS`), associada ao usuário autenticado, com ID UUID4. Nova rota `GET /predictions/{prediction_id}` (autenticada) que chama `ensure_owner` | Não existia nenhuma rota "por ID", então a checagem BOLA não estava aplicada em lugar algum. Agora um usuário autenticado que pede a predição de outro recebe `404 Recurso não encontrado`, idêntico a um ID inexistente |
-| `models/predict.py` | `PredictResponse` ganhou o campo `id` | Permitir ao cliente consultar a predição depois |
-| `security/users.py` | Segundo usuário de demonstração `analista` / `analista123` | Testar BOLA exige dois usuários distintos |
-| `tests/test.py` → `tests/test_security.py` | Renomeado | O pytest só coleta `test_*.py`/`*_test.py`; com o nome antigo `pytest tests/` rodava **0 testes** |
-| `tests/conftest.py` (novo) | Define `JWT_SECRET_KEY`/limites de rate limit antes de importar a app e zera o estado em memória a cada teste | Testes reprodutíveis sem `.env` e independentes da ordem (o contador de rate limit é global ao processo) |
-
-Nenhum controle de segurança existente foi afrouxado para os testes passarem.
-
-## 5. Organização da autenticação e testes de token (feedback da avaliação)
+## 4. Organização da autenticação e testes de token (feedback da avaliação)
 
 - `security/config.py` foi reorganizado em seções numeradas: **(1) Autenticação (JWT +
   OAuth2PasswordBearer)**, **(2) CORS**, **(3) Rate limiting**. É o único módulo que lê o

@@ -256,8 +256,7 @@ predições) antes de cada teste. Resultado atual: **22 passed**.
 | | `test_predict_with_token_without_sub_returns_401`, `test_predict_with_token_for_unknown_user_returns_401` | `401` |
 | Rota protegida — token **expirado** | `test_predict_with_expired_token_returns_401` | `401` |
 
-**Alterações na API feitas para viabilizar os testes** (detalhes em
-[`fastapi/SECURITY.md`](fastapi/SECURITY.md#4-alterações-para-a-suíte-de-testes-etapa-7)):
+**Alterações na API feitas para viabilizar os testes:**
 nova rota `GET /predictions/{prediction_id}` com checagem de ownership (BOLA), campo `id` na
 resposta de `POST /predict`, segundo usuário de demonstração (`analista` / `analista123`) e
 renomeação de `tests/test.py` → `tests/test_security.py` (o nome antigo não era coletado pelo

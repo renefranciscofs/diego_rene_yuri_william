@@ -5,6 +5,6 @@ própria — recebem corpos já validados de `models/` e aplicam controles de
 `security/` via `Depends(...)`.
 
 - `health.py`  — GET /health (disponibilidade, público).
-- `auth.py`    — POST /auth/token (login OAuth2 password flow → JWT), com rate limit.
+- `auth.py`    — POST /auth/token, com rate limit.
 - `predict.py` — POST /predict e GET /predictions/{id} (protegidas por JWT; ownership/BOLA).
 """

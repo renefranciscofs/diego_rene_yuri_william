@@ -72,8 +72,7 @@ balanceado e realista, e licença CC0 compatível com repositório público.
 │   └── *.pdf                          # relatório bruto do ZAP e versão em PDF da análise
 └── others/                            # DFD e CIA em .png (etapa 5)
     ├── CIA.png                        # análise CIA
-    ├── DFD.png                        # análise DFD
-    └── gerar_diagramas.py             # regera os dois .png a partir do estado atual da API
+    └── DFD.png                        # análise DFD
 ```
 
 ## Instalação
@@ -342,7 +341,7 @@ integração no `/predict` já auditado.
 O DFD representa **somente o que existe na implementação atual**; componentes ainda não
 implementados aparecem tracejados em cinza e marcados como **PLANEJADO**. Não há banco de dados
 hoje: usuários, tentativas de login e histórico de predições ficam em **dicionários na memória
-do processo** da API (`D1`–`D3`). O diagrama é gerado por `others/gerar_diagramas.py`.
+do processo** da API (`D1`–`D3`).
 
 **Trust boundaries:**
 
